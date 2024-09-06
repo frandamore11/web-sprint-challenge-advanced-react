@@ -1,77 +1,115 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-// Suggested initial states
 const initialMessage = ''
 const initialEmail = ''
 const initialSteps = 0
-const initialIndex = 4 // the index the "B" is at
+const initialIndex = 4 // "B" starts at index 4 in a 3x3 grid
 
 export default function AppFunctional(props) {
-  // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
-  // You can delete them and build your own logic from scratch.
+  // States
+  const [index, setIndex] = useState(initialIndex) // Index of "B" on the grid
+  const [steps, setSteps] = useState(initialSteps) // Number of steps taken
+  const [message, setMessage] = useState(initialMessage) // Message to display
+  const [email, setEmail] = useState(initialEmail) // Email input
 
+  // Helper to calculate the X, Y coordinates
   function getXY() {
-    // It it not necessary to have a state to track the coordinates.
-    // It's enough to know what index the "B" is at, to be able to calculate them.
+    const x = (index % 3) + 1
+    const y = Math.floor(index / 3) + 1
+    return [x, y]
   }
 
+  // Helper to return the "Coordinates (x, y)" message
   function getXYMessage() {
-    // It it not necessary to have a state to track the "Coordinates (2, 2)" message for the user.
-    // You can use the `getXY` helper above to obtain the coordinates, and then `getXYMessage`
-    // returns the fully constructed string.
+    const [x, y] = getXY()
+    return `Coordinates (${x}, ${y})`
   }
 
+  // Reset all states to their initial values
   function reset() {
-    // Use this helper to reset all states to their initial values.
+    setIndex(initialIndex)
+    setSteps(initialSteps)
+    setMessage(initialMessage)
+    setEmail(initialEmail)
   }
 
+  // Calculate the next index based on direction
   function getNextIndex(direction) {
-    // This helper takes a direction ("left", "up", etc) and calculates what the next index
-    // of the "B" would be. If the move is impossible because we are at the edge of the grid,
-    // this helper should return the current index unchanged.
+    const x = index % 3
+    const y = Math.floor(index / 3)
+
+    switch (direction) {
+      case 'left':
+        return x > 0 ? index - 1 : index
+      case 'right':
+        return x < 2 ? index + 1 : index
+      case 'up':
+        return y > 0 ? index - 3 : index
+      case 'down':
+        return y < 2 ? index + 3 : index
+      default:
+        return index
+    }
   }
 
+  // Move handler
   function move(evt) {
-    // This event handler can use the helper above to obtain a new index for the "B",
-    // and change any states accordingly.
+    const direction = evt.target.id // left, right, up, down
+    const nextIndex = getNextIndex(direction)
+
+    if (nextIndex !== index) {
+      setIndex(nextIndex)
+      setSteps(steps + 1)
+      setMessage('')
+    } else {
+      setMessage("You can't go that way")
+    }
   }
 
+  // Handle input change for the email field
   function onChange(evt) {
-    // You will need this to update the value of the input.
+    setEmail(evt.target.value)
   }
 
+  // Handle form submission
   function onSubmit(evt) {
-    // Use a POST request to send a payload to the server.
+    evt.preventDefault()
+    const payload = { email, steps }
+
+    // For simplicity, using alert to simulate a POST request
+    alert(`Submitting email: ${email} with steps: ${steps}`)
+    // You could use axios or fetch here to submit the payload to the server
+    // axios.post(`${BASE_URL}/submit`, payload)
   }
 
   return (
     <div id="wrapper" className={props.className}>
       <div className="info">
-        <h3 id="coordinates">Coordinates (2, 2)</h3>
-        <h3 id="steps">You moved 0 times</h3>
+        <h3 id="coordinates">{getXYMessage()}</h3>
+        <h3 id="steps">You moved {steps} times</h3>
       </div>
       <div id="grid">
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
-            <div key={idx} className={`square${idx === 4 ? ' active' : ''}`}>
-              {idx === 4 ? 'B' : null}
+            <div key={idx} className={`square${idx === index ? ' active' : ''}`}>
+              {idx === index ? 'B' : null}
             </div>
           ))
         }
       </div>
       <div className="info">
-        <h3 id="message"></h3>
+        <h3 id="message">{message}</h3>
       </div>
       <div id="keypad">
-        <button id="left">LEFT</button>
-        <button id="up">UP</button>
-        <button id="right">RIGHT</button>
-        <button id="down">DOWN</button>
-        <button id="reset">reset</button>
+        <button id="left" onClick={move}>LEFT</button>
+        <button id="up" onClick={move}>UP</button>
+        <button id="right" onClick={move}>RIGHT</button>
+        <button id="down" onClick={move}>DOWN</button>
+        <button id="reset" onClick={reset}>reset</button>
       </div>
-      <form>
-        <input id="email" type="email" placeholder="type email"></input>
-        <input id="submit" type="submit"></input>
+      <form onSubmit={onSubmit}>
+        <input id="email" type="email" placeholder="type email" value={email} onChange={onChange} />
+        <input id="submit" type="submit" />
       </form>
     </div>
   )
