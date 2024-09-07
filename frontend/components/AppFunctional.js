@@ -1,85 +1,94 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
-const initialMessage = ''
-const initialEmail = ''
-const initialSteps = 0
-const initialIndex = 4 // "B" starts at index 4 in a 3x3 grid
+// Suggested initial states
+const initialMessage = '';
+const initialEmail = '';
+const initialSteps = 0;
+const initialIndex = 4; // the index the "B" is at // why is initial index 4? 
 
 export default function AppFunctional(props) {
-  // States
-  const [index, setIndex] = useState(initialIndex) // Index of "B" on the grid
-  const [steps, setSteps] = useState(initialSteps) // Number of steps taken
-  const [message, setMessage] = useState(initialMessage) // Message to display
-  const [email, setEmail] = useState(initialEmail) // Email input
+  const [message, setMessage] = useState(initialMessage);
+  const [email, setEmail] = useState(initialEmail);
+  const [steps, setSteps] = useState(initialSteps);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-  // Helper to calculate the X, Y coordinates
   function getXY() {
-    const x = (index % 3) + 1
-    const y = Math.floor(index / 3) + 1
-    return [x, y]
+    const x = (currentIndex % 3) + 1;
+    const y = Math.floor(currentIndex / 3) + 1;
+    return { x, y };
   }
 
-  // Helper to return the "Coordinates (x, y)" message
   function getXYMessage() {
-    const [x, y] = getXY()
-    return `Coordinates (${x}, ${y})`
+    const { x, y } = getXY();
+    return `Coordinates (${x}, ${y})`;
   }
 
-  // Reset all states to their initial values
   function reset() {
-    setIndex(initialIndex)
-    setSteps(initialSteps)
-    setMessage(initialMessage)
-    setEmail(initialEmail)
+    setMessage(initialMessage);
+    setEmail(initialEmail);
+    setSteps(initialSteps);
+    setCurrentIndex(initialIndex);
   }
 
-  // Calculate the next index based on direction
   function getNextIndex(direction) {
-    const x = index % 3
-    const y = Math.floor(index / 3)
+    const col = currentIndex % 3; // Column (0, 1, 2)
+    const row = Math.floor(currentIndex / 3); // Row (0, 1, 2)
 
     switch (direction) {
       case 'left':
-        return x > 0 ? index - 1 : index
+        return col > 0 ? currentIndex - 1 : currentIndex; // If not in the leftmost column
       case 'right':
-        return x < 2 ? index + 1 : index
+        return col < 2 ? currentIndex + 1 : currentIndex; // If not in the rightmost column
       case 'up':
-        return y > 0 ? index - 3 : index
+        return row > 0 ? currentIndex - 3 : currentIndex; // If not in the top row
       case 'down':
-        return y < 2 ? index + 3 : index
+        return row < 2 ? currentIndex + 3 : currentIndex; // If not in the bottom row
       default:
-        return index
+        return currentIndex; // Return current index if direction is invalid
     }
   }
+  
+  // console.log(getNextIndex('up'))
 
-  // Move handler
+
   function move(evt) {
-    const direction = evt.target.id // left, right, up, down
-    const nextIndex = getNextIndex(direction)
+    const direction = evt.target.id; // Get the direction (left, right, up, down)
+    const newIndex = getNextIndex(direction); // Get the next index
 
-    if (nextIndex !== index) {
-      setIndex(nextIndex)
-      setSteps(steps + 1)
+    console.log(`Current index: ${currentIndex}, Moving ${direction}, New index: ${newIndex}`);
+  
+    if (newIndex !== currentIndex) {
+      setCurrentIndex(newIndex); // Update the index
+      setSteps(steps + 1); // Increment the steps
       setMessage('')
     } else {
-      setMessage("You can't go that way")
+      
+      setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
     }
   }
 
-  // Handle input change for the email field
   function onChange(evt) {
-    setEmail(evt.target.value)
+    setEmail(evt.target.value);
   }
 
-  // Handle form submission
-  function onSubmit(evt) {
-    evt.preventDefault()
-    const payload = { email, steps }
+  async function onSubmit(evt) {
+    evt.preventDefault();
+    const payload = { email };
 
-    // For simplicity, using alert to simulate a POST request
-    alert(`Submitting email: ${email} with steps: ${steps}`)
-    // You could use axios or fetch here to submit the payload to the server
-    // axios.post(`${BASE_URL}/submit`, payload)
+    try {
+      const response = await fetch('http://localhost:9000/api/result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      setMessage(data.message);
+    } catch (error) {
+      setMessage('Error submitting data');
+    }
   }
 
   return (
@@ -91,8 +100,8 @@ export default function AppFunctional(props) {
       <div id="grid">
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
-            <div key={idx} className={`square${idx === index ? ' active' : ''}`}>
-              {idx === index ? 'B' : null}
+            <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
+              {idx === currentIndex ? 'B' : null}
             </div>
           ))
         }
@@ -112,5 +121,5 @@ export default function AppFunctional(props) {
         <input id="submit" type="submit" />
       </form>
     </div>
-  )
+  );
 }
