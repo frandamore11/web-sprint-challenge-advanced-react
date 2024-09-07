@@ -34,6 +34,9 @@ export default function AppFunctional(props) {
     const col = currentIndex % 3; // Column (0, 1, 2)
     const row = Math.floor(currentIndex / 3); // Row (0, 1, 2)
 
+    // console.log(`Direction: ${direction}, Current index: ${currentIndex}, New index: ${newIndex}`);
+
+
     switch (direction) {
       case 'left':
         return col > 0 ? currentIndex - 1 : currentIndex; // If not in the leftmost column
@@ -60,7 +63,7 @@ export default function AppFunctional(props) {
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex); // Update the index
       setSteps(steps + 1); // Increment the steps
-      setMessage('')
+      // setMessage('')
     } else {
       
       setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
