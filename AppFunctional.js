@@ -36,7 +36,6 @@ export default function AppFunctional(props) {
 
     // console.log(`Direction: ${direction}, Current index: ${currentIndex}, New index: ${newIndex}`);
 
-
     switch (direction) {
       case 'left':
         return col > 0 ? currentIndex - 1 : currentIndex; // If not in the leftmost column
@@ -76,9 +75,19 @@ export default function AppFunctional(props) {
 
   async function onSubmit(evt) {
     evt.preventDefault();
-    const payload = { email };
+  
+    // Check if email is provided
+    if (!email) {
+      setMessage('Ouch: email is required');
+      return;
+    }
 
+    const { x, y } = getXY();
+  
+    const payload = { x, y, email ,steps};
+  
     try {
+      // Making a POST request to the mock server API
       const response = await fetch('http://localhost:9000/api/result', {
         method: 'POST',
         headers: {
@@ -86,10 +95,18 @@ export default function AppFunctional(props) {
         },
         body: JSON.stringify(payload),
       });
-
+  
+      // Parsing the API response
       const data = await response.json();
-      setMessage(data.message);
+  
+      // Update the message with the response message
+      setMessage(data.message); // Assuming API sends { message: 'success or failure message' }
+  
+      // Clear email input after submission
+      setEmail('');
+  
     } catch (error) {
+      // In case of a failure, set a generic error message
       setMessage('Error submitting data');
     }
   }
