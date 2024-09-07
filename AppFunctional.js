@@ -31,34 +31,31 @@ export default function AppFunctional(props) {
   }
 
   function getNextIndex(direction) {
-    let newIndex = currentIndex;
+    const col = currentIndex % 3; // Column (0, 1, 2)
+    const row = Math.floor(currentIndex / 3); // Row (0, 1, 2)
 
     switch (direction) {
       case 'left':
-        if (currentIndex % 3 !== 0) newIndex -= 1;
-        break;
-      case 'up':
-        if (currentIndex > 2) newIndex -= 3;
-        break;
+        return col > 0 ? currentIndex - 1 : currentIndex; // If not in the leftmost column
       case 'right':
-        if (currentIndex % 3 !== 2) newIndex += 1;
-        break;
+        return col < 2 ? currentIndex + 1 : currentIndex; // If not in the rightmost column
+      case 'up':
+        return row > 0 ? currentIndex - 3 : currentIndex; // If not in the top row
       case 'down':
-        if (currentIndex < 6) newIndex += 3;
-        break;
+        return row < 2 ? currentIndex + 3 : currentIndex; // If not in the bottom row
       default:
-        break;
+        return currentIndex; // Return current index if direction is invalid
     }
-
-    return newIndex;
   }
-
+  
   // console.log(getNextIndex('up'))
 
 
   function move(evt) {
     const direction = evt.target.id; // Get the direction (left, right, up, down)
-    const newIndex = getNextIndex(currentIndex, direction); // Get the next index
+    const newIndex = getNextIndex(direction); // Get the next index
+
+    console.log(`Current index: ${currentIndex}, Moving ${direction}, New index: ${newIndex}`);
   
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex); // Update the index
@@ -103,7 +100,7 @@ export default function AppFunctional(props) {
       <div id="grid">
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
-            <div key={idx} className={`square${idx === currentIndex ? ' active' : 'B'}`}>
+            <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
               {idx === currentIndex ? 'B' : null}
             </div>
           ))
