@@ -53,18 +53,20 @@ export default function AppFunctional(props) {
     return newIndex;
   }
 
-  console.log(getNextIndex('up'))
+  // console.log(getNextIndex('up'))
 
 
   function move(evt) {
     const direction = evt.target.id; // Get the direction (left, right, up, down)
-    const newIndex = getNextIndex(direction); // Get the next index
+    const newIndex = getNextIndex(currentIndex, direction); // Get the next index
   
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex); // Update the index
       setSteps(steps + 1); // Increment the steps
+      setMessage('')
     } else {
-      setMessage("You can't go that way"); // Display a message if the move is invalid
+      
+      setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
     }
   }
 
