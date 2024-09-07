@@ -38,7 +38,7 @@ export default function AppFunctional(props) {
         if (currentIndex % 3 !== 0) newIndex -= 1;
         break;
       case 'up':
-        if (currentIndex >= 3 && currentIndex < 6) newIndex -= 3;
+        if (currentIndex > 2) newIndex -= 3;
         break;
       case 'right':
         if (currentIndex % 3 !== 2) newIndex += 1;
