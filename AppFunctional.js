@@ -31,23 +31,30 @@ export default function AppFunctional(props) {
   }
 
   function getNextIndex(direction) {
-    const col = currentIndex % 3; // Column (0, 1, 2)
-    const row = Math.floor(currentIndex / 3); // Row (0, 1, 2)
-
-    // console.log(`Direction: ${direction}, Current index: ${currentIndex}, New index: ${newIndex}`);
-
+    const col = currentIndex % 3;
+    const row = Math.floor(currentIndex / 3);
+  
+    let newIndex = currentIndex;
+  
     switch (direction) {
       case 'left':
-        return col > 0 ? currentIndex - 1 : currentIndex; // If not in the leftmost column
+        if (col > 0) newIndex = currentIndex - 1;
+        break;
       case 'right':
-        return col < 2 ? currentIndex + 1 : currentIndex; // If not in the rightmost column
+        if (col < 2) newIndex = currentIndex + 1;
+        break;
       case 'up':
-        return row > 0 ? currentIndex - 3 : currentIndex; // If not in the top row
+        if (row > 0) newIndex = currentIndex - 3;
+        break;
       case 'down':
-        return row < 2 ? currentIndex + 3 : currentIndex; // If not in the bottom row
+        if (row < 2) newIndex = currentIndex + 3;
+        break;
       default:
-        return currentIndex; // Return current index if direction is invalid
+        break;
     }
+  
+    // console.log(Direction: ${direction}, Current Index: ${currentIndex}, New Index: ${newIndex});
+    return newIndex;
   }
   
   // console.log(getNextIndex('up'))
@@ -58,15 +65,19 @@ export default function AppFunctional(props) {
     const newIndex = getNextIndex(direction); // Get the next index
 
     console.log(`Current index: ${currentIndex}, Moving ${direction}, New index: ${newIndex}`);
-  
+    
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex); // Update the index
       setSteps(prevSteps => prevSteps + 1); // Increment the steps
       setMessage('')
     } else {
-        
+
       setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
     }
+
+    setTimeout(() => {
+      console.log(`Current active index after state update: ${newIndex}`);
+    }, 0);
   }
 
   function onChange(evt) {
