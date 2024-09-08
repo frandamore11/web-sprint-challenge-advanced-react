@@ -73,6 +73,8 @@ export default function AppFunctional(props) {
     setEmail(evt.target.value);
   }
 
+  console.log(`Current index: ${currentIndex}`);
+
   async function onSubmit(evt) {
     evt.preventDefault();
   
@@ -121,7 +123,7 @@ export default function AppFunctional(props) {
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
             <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
-              {idx === currentIndex ? 'B' : null}
+              {idx === currentIndex ? 'B' : ''}
             </div>
           ))
         }
