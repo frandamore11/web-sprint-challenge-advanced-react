@@ -13,7 +13,7 @@ export default function AppFunctional(props) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
   function getXY() {
-    const x = (currentIndex % 3) + 1;
+    const x = (currentIndex % 3) + 1; //currentIndex = 1 
     const y = Math.floor(currentIndex / 3) + 1;
     return { x, y };
   }
@@ -61,10 +61,10 @@ export default function AppFunctional(props) {
   
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex); // Update the index
-      setSteps(steps + 1); // Increment the steps
-      // setMessage('')
+      setSteps(prevSteps => prevSteps + 1); // Increment the steps
+      setMessage('')
     } else {
-      
+        
       setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
     }
   }
@@ -124,7 +124,7 @@ export default function AppFunctional(props) {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
             <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
               {idx === currentIndex ? 'B' : ''}
-            </div>
+            </div>  
           ))
         }
       </div>
