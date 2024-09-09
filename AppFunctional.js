@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
-
-// Suggested initial states
-const initialMessage = '';
-const initialEmail = '';
-const initialSteps = 0;
-const initialIndex = 4; // the index the "B" is at // why is initial index 4? 
+import React, { useState, useEffect } from 'react';
 
 export default function AppFunctional(props) {
-  const [message, setMessage] = useState(initialMessage);
-  const [email, setEmail] = useState(initialEmail);
-  const [steps, setSteps] = useState(initialSteps);
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState('');
+  const [steps, setSteps] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(4);
+
+  useEffect(() => {
+    console.log(`Updated currentIndex: ${currentIndex}`);
+  }, [currentIndex]);
 
   function getXY() {
-    const x = (currentIndex % 3) + 1; //currentIndex = 1 
+    const x = (currentIndex % 3) + 1;
     const y = Math.floor(currentIndex / 3) + 1;
     return { x, y };
   }
@@ -24,83 +22,67 @@ export default function AppFunctional(props) {
   }
 
   function reset() {
-    setMessage(initialMessage);
-    setEmail(initialEmail);
-    setSteps(initialSteps);
-    setCurrentIndex(initialIndex);
+    setMessage('');
+    setEmail('');
+    setSteps(0);
+    setCurrentIndex(4);
   }
 
-  function getNextIndex(direction) {
-    const col = currentIndex % 3;
-    const row = Math.floor(currentIndex / 3);
-  
-    let newIndex = currentIndex;
-  
+  function getNextIndexFromPrev(direction, prevIndex) {
+    const col = prevIndex % 3;
+    const row = Math.floor(prevIndex / 3);
+
     switch (direction) {
       case 'left':
-        if (col > 0) newIndex = currentIndex - 1;
-        break;
+        return col > 0 ? prevIndex - 1 : prevIndex;
       case 'right':
-        if (col < 2) newIndex = currentIndex + 1;
-        break;
+        return col < 2 ? prevIndex + 1 : prevIndex;
       case 'up':
-        if (row > 0) newIndex = currentIndex - 3;
-        break;
+        return row > 0 ? prevIndex - 3 : prevIndex;
       case 'down':
-        if (row < 2) newIndex = currentIndex + 3;
-        break;
+        return row < 2 ? prevIndex + 3 : prevIndex;
       default:
-        break;
+        return prevIndex; // Return the current index if the direction is invalid
     }
-  
-    // console.log(Direction: ${direction}, Current Index: ${currentIndex}, New Index: ${newIndex});
-    return newIndex;
   }
-  
-  // console.log(getNextIndex('up'))
-
 
   function move(evt) {
-    const direction = evt.target.id; // Get the direction (left, right, up, down)
-    const newIndex = getNextIndex(direction); // Get the next index
+    const direction = evt.target.id;
 
-    console.log(`Current index: ${currentIndex}, Moving ${direction}, New index: ${newIndex}`);
-    
-    if (newIndex !== currentIndex) {
-      setCurrentIndex(newIndex); // Update the index
-      setSteps(prevSteps => prevSteps + 1); // Increment the steps
-      setMessage('')
-    } else {
+    // Use functional state update to get the latest currentIndex
+    setCurrentIndex(prevIndex => {
+      const newIndex = getNextIndexFromPrev(direction, prevIndex); // Calculate the next index based on the previous index
 
-      setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
-    }
+      console.log(`Previous index: ${prevIndex}, Moving ${direction}, New index: ${newIndex}`);
 
-    setTimeout(() => {
-      console.log(`Current active index after state update: ${newIndex}`);
-    }, 0);
+      // If movement is valid (newIndex is different), update the state and steps
+      if (newIndex !== prevIndex) {
+        setSteps(prevSteps => prevSteps + 1); // Use functional state update for steps
+        setMessage(''); // Clear any previous message
+      } else {
+        setMessage(`You can't go ${direction}`); // Show an error message if movement is invalid
+      }
+
+      return newIndex; // Return the new index to update the currentIndex
+    });
   }
 
   function onChange(evt) {
     setEmail(evt.target.value);
   }
 
-  console.log(`Current index: ${currentIndex}`);
-
   async function onSubmit(evt) {
     evt.preventDefault();
-  
-    // Check if email is provided
+
     if (!email) {
       setMessage('Ouch: email is required');
       return;
     }
 
     const { x, y } = getXY();
-  
-    const payload = { x, y, email ,steps};
-  
+    const payload = { x, y, email, steps };
+
     try {
-      // Making a POST request to the mock server API
       const response = await fetch('http://localhost:9000/api/result', {
         method: 'POST',
         headers: {
@@ -108,18 +90,11 @@ export default function AppFunctional(props) {
         },
         body: JSON.stringify(payload),
       });
-  
-      // Parsing the API response
+
       const data = await response.json();
-  
-      // Update the message with the response message
-      setMessage(data.message); // Assuming API sends { message: 'success or failure message' }
-  
-      // Clear email input after submission
+      setMessage(data.message);
       setEmail('');
-  
     } catch (error) {
-      // In case of a failure, set a generic error message
       setMessage('Error submitting data');
     }
   }
@@ -133,9 +108,9 @@ export default function AppFunctional(props) {
       <div id="grid">
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
-            <div key={idx} className={`square ${idx === currentIndex ? ' active' : ''}`}>
+            <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
               {idx === currentIndex ? 'B' : ''}
-            </div>  
+            </div>
           ))
         }
       </div>
