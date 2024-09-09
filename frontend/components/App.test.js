@@ -67,5 +67,5 @@ test('reset button clears the email input value', () => {
 
   // Assert the input field is cleared
   expect(emailInput.value).toBe('')
-// })
+})
 
