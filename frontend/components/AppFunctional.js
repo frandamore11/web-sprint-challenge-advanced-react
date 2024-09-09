@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Suggested initial states
 const initialMessage = '';
@@ -12,9 +12,14 @@ export default function AppFunctional(props) {
   const [steps, setSteps] = useState(initialSteps);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
+   useEffect(() => {
+    console.log(`Updated currentIndex: ${currentIndex}`);
+  }, [currentIndex]);
+
   function getXY() {
-    const x = (currentIndex % 3) + 1;
+    const x = (currentIndex % 3) + 1; //currentIndex = 1 
     const y = Math.floor(currentIndex / 3) + 1;
+    console.log(`New coordinates: (${x}, ${y})`);
     return { x, y };
   }
 
@@ -31,21 +36,30 @@ export default function AppFunctional(props) {
   }
 
   function getNextIndex(direction) {
-    const col = currentIndex % 3; // Column (0, 1, 2)
-    const row = Math.floor(currentIndex / 3); // Row (0, 1, 2)
-
+    const col = currentIndex % 3;
+    const row = Math.floor(currentIndex / 3);
+  
+    let newIndex = currentIndex;
+  
     switch (direction) {
       case 'left':
-        return col > 0 ? currentIndex - 1 : currentIndex; // If not in the leftmost column
+        if (col > 0) newIndex = currentIndex - 1;
+        break;
       case 'right':
-        return col < 2 ? currentIndex + 1 : currentIndex; // If not in the rightmost column
+        if (col < 2) newIndex = currentIndex + 1;
+        break;
       case 'up':
-        return row > 0 ? currentIndex - 3 : currentIndex; // If not in the top row
+        if (row > 0) newIndex = currentIndex - 3;
+        break;
       case 'down':
-        return row < 2 ? currentIndex + 3 : currentIndex; // If not in the bottom row
+        if (row < 2) newIndex = currentIndex + 3;
+        break;
       default:
-        return currentIndex; // Return current index if direction is invalid
+        break;
     }
+  
+    // console.log(Direction: ${direction}, Current Index: ${currentIndex}, New Index: ${newIndex});
+    return newIndex;
   }
   
   // console.log(getNextIndex('up'))
@@ -56,26 +70,41 @@ export default function AppFunctional(props) {
     const newIndex = getNextIndex(direction); // Get the next index
 
     console.log(`Current index: ${currentIndex}, Moving ${direction}, New index: ${newIndex}`);
-  
+    
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex); // Update the index
-      setSteps(steps + 1); // Increment the steps
+      setSteps(prevSteps => prevSteps + 1); // Increment the steps
       setMessage('')
     } else {
-      
+
       setMessage(`You can't go ${direction}`); // Display a message if the move is invalid
     }
+
+    return newIndex
+    console.log(`Current active index after state update: ${currentIndex}`);
   }
 
   function onChange(evt) {
     setEmail(evt.target.value);
   }
 
+  console.log(`Current index: ${currentIndex}`);
+
   async function onSubmit(evt) {
     evt.preventDefault();
-    const payload = { email };
+  
+    // Check if email is provided
+    if (!email) {
+      setMessage('Ouch: email is required');
+      return;
+    }
 
+    const { x, y } = getXY();
+  
+    const payload = { x, y, email ,steps};
+  
     try {
+      // Making a POST request to the mock server API
       const response = await fetch('http://localhost:9000/api/result', {
         method: 'POST',
         headers: {
@@ -83,10 +112,18 @@ export default function AppFunctional(props) {
         },
         body: JSON.stringify(payload),
       });
-
+  
+      // Parsing the API response
       const data = await response.json();
-      setMessage(data.message);
+  
+      // Update the message with the response message
+      setMessage(data.message); // Assuming API sends { message: 'success or failure message' }
+  
+      // Clear email input after submission
+      setEmail('');
+  
     } catch (error) {
+      // In case of a failure, set a generic error message
       setMessage('Error submitting data');
     }
   }
@@ -101,8 +138,8 @@ export default function AppFunctional(props) {
         {
           [0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => (
             <div key={idx} className={`square${idx === currentIndex ? ' active' : ''}`}>
-              {idx === currentIndex ? 'B' : null}
-            </div>
+              {idx === currentIndex ? 'B' : ''}
+            </div>  
           ))
         }
       </div>
@@ -123,3 +160,4 @@ export default function AppFunctional(props) {
     </div>
   );
 }
+
